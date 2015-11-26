@@ -98,7 +98,7 @@ rm(df,tfdf)
 
 
 ###############################################################################
-################## SEPARATE TICK AN3D BID_ASK SMARTCOM LOG READER###############
+################## SEPARATE TICK AND BID_ASK SMARTCOM LOG READER###############
 
 library(data.table)
 options(digits.secs=3)
@@ -163,3 +163,20 @@ tbaDT<-bidaskDT[tickDT,roll=T]
 tbaDT<-tbaDT[complete.cases(tbaDT),]
 df<-data.frame(tbaDT[,.SD,.SDcols=c(tickHeader, bidaskHeader[-1])])
 save(df, file=paste(tbaDT$Symbol[1], as.Date(tbaDT$datetime[1]),".RData", sep=""))
+
+
+
+###################################################################################
+###################### PLAZA DATA FROM _LANDY #####################################
+setwd("f:/TRADE/Data/research/_landy/")
+fname<-"RTS-12.15.csv"
+
+tbaDT<-fread(fname,sep=";",stringsAsFactors=FALSE)
+colnames(tbaDT)<-tolower(colnames(tbaDT))
+dtFormat<-"%d.%m.%Y %H:%M:%OS"
+tbaDT[,"datetime":=as.POSIXct(strptime(datetime,dtFormat))]
+tba
+setnames(tbaDT,"sign", "buysell")
+
+df<-data.frame(tbaDT)
+save(df, file=paste("RTS-12.15", as.Date(tbaDT$datetime[1]),".RData", sep=""))
