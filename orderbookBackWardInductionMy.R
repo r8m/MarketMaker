@@ -40,7 +40,7 @@ SolveBackwardInduction<-function()
                         #V ostal`ny`e momenty` vremeni nahodim znacheniia vektorov L (poka bez umnozheniia na 
                         # differentcial`ny`e matritcy` v pervoi` chasti vy`razheniia dlia L)
                         L[y,f] = LV(y, f, s, t)
-                        
+
                     }
                     
                     #Peremnozhenie matrichnoi` chasti i vektorov L, poluchenny`kh vy`she, v rezul`tate poluchaem
