@@ -26,7 +26,8 @@ getMarketParams<-function(fname,
             df[,i]<-as.numeric(levels(df[,i]))[df[,i]]
     
     #Discrete data
-     dfts<-xts(x=dplyr::select(df,-datetime,-Symbol, -buysell,-brokerDateTime),order.by=df$datetime, unique=FALSE)
+     #dfts<-xts(x=dplyr::select(df,-datetime,-Symbol, -buysell,-brokerDateTime),order.by=df$datetime, unique=FALSE)
+  dfts<-xts(x=dplyr::select(df,-datetime,-buysell),order.by=df$datetime, unique=FALSE)
      dfts<-dfts[!is.na(index(dfts))]
      dfts<-make.index.unique(dfts,deltat/100, drop=TRUE)
     
@@ -76,6 +77,7 @@ getMarketParams<-function(fname,
     
     lambdaS<-nrow(filter(df, jumpS!=0))/TT
     roS<- markovchainFit(data=filter(df, jumpS!=0)$deltaS)
+    SMax=nrow(roS)*deltaTick
     
     #' Mean reversion parameter F alfaF
     #' Volatility paramter F sigmaF
