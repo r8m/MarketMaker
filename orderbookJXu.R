@@ -7,6 +7,7 @@ library(data.table)
 library(reshape2)
 library(xts)
 library(zoo)
+library(sde)
 library(ggplot2)
 library(scales)
 library(caret)
@@ -22,7 +23,10 @@ options(digits.secs=3)
 
 fname<-"data/"
 setwd(fname)
-fname<-c("SBRF-12.15_FT2015-11-03.RData")
+setwd("f:/TRADE/Data/research/_landy/")
+
+
+fname<-c("RTS-12.152015-09-16.RData")
 #"tickorderbookSI07072015.RData",
 #"tickorderbookSI30062015.RData",
 #          "tickorderbookSI2804.RData",
@@ -35,13 +39,34 @@ fname<-c("SBRF-12.15_FT2015-11-03.RData")
 #          "tickorderbookSI1704.RData",
 #          "tickorderbookSI1604.RData")
 
-obMarketParams<-list()
-for(i in 1:length(fname)){    
-    obMarketParams[[i]]<-getMarketParams(fname[i])
-}
+# obMarketParams<-list()
+# for(i in 1:length(fname)){    
+#     obMarketParams[[i]]<-getMarketParams(fname[i])
+# }
+# 
+# #' Solve trade politics
+# obMPdf<-obMarketParams[[1]]
 
-#' Solve trade politics
-obMPdf<-obMarketParams[[1]]
+obMPdf<-getMarketParams(fname,
+                        TFrame=1, 
+                        deltat=0.1,
+                        MY=10,
+                        deltaY=1, 
+                        MF=10, 
+                        # Disbalance step
+                        deltaF=0.1, 
+                        # Price min step
+                        deltaTick=10,
+                        #Commision
+                        eps=2,
+                        # Invenory penalization (Risk)
+                        gamma=2,
+                        # Max market order size in lot
+                        dzetamax=10,
+                        #Spread Max
+                        SMax=10, 
+                        # Orderbook max level
+                        levelF=0)
 
 w<-array(data=0, dim=c(obMPdf$NT,obMPdf$NY, obMPdf$NF, obMPdf$NS))
 plt.thtkq<-array(data=0,dim=c(obMPdf$NT,obMPdf$NY, obMPdf$NF, obMPdf$NS))
