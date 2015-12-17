@@ -169,14 +169,13 @@ save(df, file=paste(tbaDT$Symbol[1], as.Date(tbaDT$datetime[1]),".RData", sep=""
 ###################################################################################
 ###################### PLAZA DATA FROM _LANDY #####################################
 setwd("f:/TRADE/Data/research/_landy/")
-fname<-"RTS-12.15.csv"
+fname<-"SBRF-12.15_18.09.2015.csv"
 
 tbaDT<-fread(fname,sep=";",stringsAsFactors=FALSE)
 colnames(tbaDT)<-tolower(colnames(tbaDT))
 dtFormat<-"%d.%m.%Y %H:%M:%OS"
 tbaDT[,"datetime":=as.POSIXct(strptime(datetime,dtFormat))]
-tba
 setnames(tbaDT,"sign", "buysell")
 
 df<-data.frame(tbaDT)
-save(df, file=paste("RTS-12.15", as.Date(tbaDT$datetime[1]),".RData", sep=""))
+save(df, file=paste("SBRF-12.15", as.Date(tbaDT$datetime[1]),".RData", sep=""))

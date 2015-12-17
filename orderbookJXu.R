@@ -1,21 +1,12 @@
 #Orderbook Research Jiangmin Xu Algorithm
 
 #Load libraries
-library(dplyr)
-library(tidyr)
 library(data.table)
-library(reshape2)
-library(xts)
-library(zoo)
-library(sde)
+library(dplyr)
 library(ggplot2)
-library(scales)
-library(caret)
-library(markovchain)
 library(manipulate)
-library(quantmod)
 source('orderbookOU.R', echo=FALSE)
-source('orderbookGetMarketParam.R', echo=FALSE)
+source('orderbookGetMarketParamDT.R', echo=FALSE)
 source('orderbookBackWardInductionMy.R', echo=TRUE)
 source('orderbookPlotStrategies.R', echo=FALSE)
 
@@ -24,9 +15,9 @@ options(digits.secs=3)
 fname<-"data/"
 setwd(fname)
 setwd("f:/TRADE/Data/research/_landy/")
+fname<-c("SBRF-12.152015-09-18.RData")
+symb<-"SBRF-12.15_FT"
 
-
-fname<-c("RTS-12.152015-09-16.RData")
 #"tickorderbookSI07072015.RData",
 #"tickorderbookSI30062015.RData",
 #          "tickorderbookSI2804.RData",
@@ -46,7 +37,7 @@ fname<-c("RTS-12.152015-09-16.RData")
 # 
 # #' Solve trade politics
 # obMPdf<-obMarketParams[[1]]
-
+startTime<-Sys.time()
 obMPdf<-getMarketParams(fname,
                         TFrame=1, 
                         deltat=0.1,
@@ -56,9 +47,9 @@ obMPdf<-getMarketParams(fname,
                         # Disbalance step
                         deltaF=0.1, 
                         # Price min step
-                        deltaTick=10,
+                        deltaTick=1,
                         #Commision
-                        eps=2,
+                        eps=0.5,
                         # Invenory penalization (Risk)
                         gamma=2,
                         # Max market order size in lot
@@ -66,7 +57,10 @@ obMPdf<-getMarketParams(fname,
                         #Spread Max
                         SMax=10, 
                         # Orderbook max level
-                        levelF=0)
+                        levelF=0, 
+                        shiftvalue = 1)
+Sys.time()-startTime
+
 
 w<-array(data=0, dim=c(obMPdf$NT,obMPdf$NY, obMPdf$NF, obMPdf$NS))
 plt.thtkq<-array(data=0,dim=c(obMPdf$NT,obMPdf$NY, obMPdf$NF, obMPdf$NS))
@@ -75,8 +69,9 @@ plt.thmkb<-array(data=0,dim=c(obMPdf$NT,obMPdf$NY, obMPdf$NF, obMPdf$NS))
 plt.thmka<-array(data=0,dim=c(obMPdf$NT,obMPdf$NY, obMPdf$NF, obMPdf$NS))
 plt.Lmatrix<-SolveLMatrix()
 
+startTime<-Sys.time()
 SolveBackwardInduction()
-
+Sys.time()-startTime
 gc()
 
 polmkdf<-melt(plt.polmk)
@@ -102,6 +97,7 @@ politicsNames<-c("MomentumSell" , "MomentumBuy" ,
                  "MarketMaking","PingingBidSide", "PingingAskSide" ,"PingingBidAskSide" )
 
 
+politics<-data.table(politics)
 politics<-mutate(politics, 
                  MomentumSell=(PLT==FALSE)&(TQTY+YV<0)&(TQTY<0),
                  MomentumBuy=(PLT==FALSE)&(TQTY+YV>0)&(TQTY>0),
@@ -114,8 +110,9 @@ politics<-mutate(politics,
                  PingingAskSide=(PLT==TRUE)&(MMAQTY==1)&(MMBQTY==0),
                  PingingBidAskSide=(PLT==TRUE)&(MMBQTY==1)&(MMAQTY==1))
 
-politics$Str<-as.factor( (apply(politics[,politicsNames],1,FUN=function(x)politicsNames[x])))
-politics<-data.table(politics)
+
+politics[,Str:=politicsNames[which(unlist(.SD))], .SDcols=politicsNames, by=1:nrow(politics)]
+
 rm(polmkdf, thmkadf, thmkbdf, thtkqdf)
 
 save(obMPdf,plt.polmk,plt.thtkq,plt.thmkb,plt.thmka,politics,
@@ -125,12 +122,12 @@ save(obMPdf,plt.polmk,plt.thtkq,plt.thmkb,plt.thmka,politics,
                 ".RData", sep=""))
 rm(plt.polmk, plt.thmka, plt.thmkb, plt.thtkq, w)
 rm(plt.Lmatrix)
-write.csv(dplyr::select(politics,t, y, f, s,  PLT, MMAQTY, MMBQTY, TQTY,  TV,  YV, FV, SV),
+write.csv(politics[,.(t, y, f, s,  PLT, MMAQTY, MMBQTY, TQTY,  TV,  YV, FV, SV)],
           file=paste("politics",obMPdf$dfdate,
                      "gamma",obMPdf$gamma,
                      "dzetamax", obMPdf$dzetamax,
                      ".csv", sep=""))
-obMPdf$symbol<-"SBRF-12.15_FT"
+obMPdf$symbol<-symb
 write.csv(data.frame( obMPdf$dfdate,
                       obMPdf$symbol,
                       obMPdf$lambdaS,

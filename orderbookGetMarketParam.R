@@ -1,6 +1,11 @@
+library(markovchain)
+library(dplyr)
+library(xts)
+
+
 getMarketParams<-function(fname, 
-                          TFrame=1, 
-                          deltat=0.1,
+                          TFrame=10, 
+                          deltat=0.5,
                           MY=10,
                           deltaY=1, 
                           MF=10, 
@@ -77,7 +82,7 @@ getMarketParams<-function(fname,
     
     lambdaS<-nrow(filter(df, jumpS!=0))/TT
     roS<- markovchainFit(data=filter(df, jumpS!=0)$deltaS)
-    SMax=nrow(roS)*deltaTick
+    SMax=nrow(roS$estimate)*deltaTick
     
     #' Mean reversion parameter F alfaF
     #' Volatility paramter F sigmaF
