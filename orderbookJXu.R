@@ -12,9 +12,9 @@ source('orderbookPlotStrategies.R', echo=FALSE)
 
 options(digits.secs=3)
 
-fname<-"data/"
-setwd(fname)
-setwd("f:/TRADE/Data/research/_landy/")
+#fname<-"data/"
+#setwd(fname)
+#setwd("f:/TRADE/Data/research/_landy/")
 fname<-c("SBRF-12.152015-09-18.RData")
 symb<-"SBRF-12.15_FT"
 
@@ -51,7 +51,7 @@ obMPdf<-getMarketParams(fname,
                         #Commision
                         eps=0.5,
                         # Invenory penalization (Risk)
-                        gamma=2,
+                        gamma=1,
                         # Max market order size in lot
                         dzetamax=10,
                         #Spread Max
