@@ -5,6 +5,8 @@ library(data.table)
 library(dplyr)
 library(ggplot2)
 library(manipulate)
+setwd("~/repos/MarketMaker")
+
 source('orderbookOU.R', echo=FALSE)
 source('orderbookGetMarketParamDT.R', echo=FALSE)
 source('orderbookBackWardInductionMy.R', echo=TRUE)
@@ -14,8 +16,8 @@ options(digits.secs=3)
 
 #fname<-"data/"
 #setwd(fname)
-setwd("f:/TRADE/Data/research/zxweed/")
-fname<-c("Si-12.152015-09-16.RData")
+setwd("~/repos/MarketMaker/data")
+fname<-c("Si-12.152015-09-18.RData")
 symb<-"Si-12.15_FT"
 
 #"tickorderbookSI07072015.RData",
@@ -115,19 +117,19 @@ politics[,Str:=politicsNames[which(unlist(.SD))], .SDcols=politicsNames, by=1:nr
 
 rm(polmkdf, thmkadf, thmkbdf, thtkqdf)
 
+obMPdf$symbol<-symb
 save(obMPdf,plt.polmk,plt.thtkq,plt.thmkb,plt.thmka,politics,
-     file=paste("politics",obMPdf$dfdate,
+     file=paste("politics",symb,obMPdf$dfdate,
                 "gamma",obMPdf$gamma,
                 "dzetamax", obMPdf$dzetamax,
-                ".RData", sep=""))
+                ".RData", sep="_"))
 rm(plt.polmk, plt.thmka, plt.thmkb, plt.thtkq, w)
 rm(plt.Lmatrix)
 write.csv(politics[,.(t, y, f, s,  PLT, MMAQTY, MMBQTY, TQTY,  TV,  YV, FV, SV)],
-          file=paste("politics",obMPdf$dfdate,
+          file=paste("politics",obMPdf$symbol,obMPdf$dfdate,
                      "gamma",obMPdf$gamma,
                      "dzetamax", obMPdf$dzetamax,
-                     ".csv", sep=""))
-obMPdf$symbol<-symb
+                     ".csv", sep="_"))
 write.csv(data.frame( obMPdf$dfdate,
                       obMPdf$symbol,
                       obMPdf$lambdaS,
@@ -156,8 +158,8 @@ write.csv(data.frame( obMPdf$dfdate,
                       obMPdf$dzetamax,
                       obMPdf$SMax,     
                       obMPdf$NS),
-          file=paste("marketparams",obMPdf$dfdate,
-                     ".csv", sep=""))
+          file=paste("marketparams",obMPdf$symbol,obMPdf$dfdate,
+                     ".csv", sep="_"))
 
 manipulate(PlotStrategies(t,s), 
            t=slider(1,(obMPdf$NT-1)),
@@ -171,3 +173,41 @@ politics[,.N/politics[,.N],by=Str][order(-V1)]
 #saveGIF(plotAllStrategies(1:(obMPdf$NT-1),6),
 #        interval = 0.2,
 #        movie.name = "orderbookS6.gif", ani.width = 800, ani.height = 400
+
+
+# 
+# 
+# #Market Params stat
+# head<-c("dfdate",
+#         "lambdaS",
+#         "alfaF",
+#         "sigmaF",
+#         "lambdaJ1",
+#         "lambdaJ2",
+#         "beta1",
+#         "beta2",
+#         "lambdaMA",
+#         "lambdaMB",
+#         "dzeta0",   
+#         "dzeta1")
+# files<-c("~/repos/MarketMaker/data/politics_Si-12.15_FT_2015-09-16_gamma_1_dzetamax_10_.RData",
+#          "~/repos/MarketMaker/data/politics_Si-12.15_FT_2015-09-17_gamma_1_dzetamax_10_.RData",
+#          "~/repos/MarketMaker/data/politics_Si-12.15_FT_2015-09-18_gamma_1_dzetamax_10_.RData")
+# 
+# dtMP<-rbindlist(lapply(files, FUN=function(x){
+#   load(x)
+#   data.table(obMPdf$dfdate,
+#              obMPdf$lambdaS,
+#              obMPdf$alfaF,
+#              obMPdf$sigmaF,
+#              obMPdf$lambdaJ1,
+#              obMPdf$lambdaJ2,
+#              obMPdf$beta1,
+#              obMPdf$beta2,
+#              obMPdf$lambdaMA,
+#              obMPdf$lambdaMB,
+#              obMPdf$dzeta0,   
+#              obMPdf$dzeta1)
+# }))
+# setnames(dtMP, head)
+# dtMP
