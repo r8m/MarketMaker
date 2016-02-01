@@ -3,7 +3,7 @@
 library(data.table)
 options(digits.secs=3)
 
-fname<-"g:/TRADE/Data/research/SBRF/20151103/"
+fname<-"f:/TRADE/Data/research/SI/"
 setwd(fname)
 
 fileList<-dir()
@@ -60,17 +60,29 @@ setkey(tickDT, datetime)
 setkey(bidaskDT, datetime)
 
 tbaDT<-bidaskDT[tickDT,roll=T]
+for (j in 1:ncol(tbaDT)) set(tbaDT, which(is.infinite(tbaDT[[j]])), j, NA)
 tbaDT<-tbaDT[complete.cases(tbaDT),]
-df<-data.frame(tbaDT[,.SD,.SDcols=c(tickHeader, bidaskHeader[-1])])
-save(df, file=paste(tbaDT$Symbol[1], as.Date(tbaDT$datetime[1]),".RData", sep=""))
 
+for (j in 1:ncol(tickDT)) set(tickDT, which(is.infinite(tickDT[[j]])), j, NA)
+tickDT<-tickDT[complete.cases(tickDT),]
 
+for (j in 1:ncol(bidaskDT)) set(bidaskDT, which(is.infinite(bidaskDT[[j]])), j, NA)
+bidaskDT<-bidaskDT[complete.cases(bidaskDT),]
+
+df<-tbaDT[,.SD,.SDcols=c(tickHeader, bidaskHeader[-1])]
+save(df,bidaskDT, tickDT, file=paste(tbaDT$Symbol[1], as.Date(tbaDT$datetime[1]),".RData", sep=""))
+#rm(tbaDT, bidaskDT, tickDT)
+library(ggplot2)
+ggplot(data=df[datetime>=as.POSIXct("2015-12-21 10:15:05") & datetime<=as.POSIXct("2015-12-21 10:20:05")])+
+  geom_point(aes(datetime,price), colour="darkgrey")+
+  geom_point(aes(datetime,askprice0), colour="lightcoral", alpha=I(0.5))+
+  geom_point(aes(datetime,bidprice0), colour="mediumaquamarine",alpha=I(0.5))
 
 ###################################################################################
 ###################### PLAZA DATA FROM _LANDY #####################################
 library(data.table)
 options(digits.secs=3)
-setwd("f:/TRADE/Data/research/_landy/")
+setwd("f:/TRADE/Data/research/zxweed/")
 fname<-"SBRF-12.15_18.09.2015.csv"
 
 tbaDT<-fread(fname,sep=";",stringsAsFactors=FALSE)

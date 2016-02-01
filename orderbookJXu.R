@@ -14,9 +14,9 @@ options(digits.secs=3)
 
 #fname<-"data/"
 #setwd(fname)
-#setwd("f:/TRADE/Data/research/_landy/")
-fname<-c("SBRF-12.152015-09-18.RData")
-symb<-"SBRF-12.15_FT"
+setwd("f:/TRADE/Data/research/zxweed/")
+fname<-c("Si-12.152015-09-16.RData")
+symb<-"Si-12.15_FT"
 
 #"tickorderbookSI07072015.RData",
 #"tickorderbookSI30062015.RData",
@@ -57,7 +57,7 @@ obMPdf<-getMarketParams(fname,
                         #Spread Max
                         SMax=10, 
                         # Orderbook max level
-                        levelF=0, 
+                        levelF=2, 
                         shiftvalue = 1)
 Sys.time()-startTime
 
@@ -163,6 +163,7 @@ manipulate(PlotStrategies(t,s),
            t=slider(1,(obMPdf$NT-1)),
            s=slider(1,obMPdf$NS))
 
+politics[,.N/politics[,.N],by=Str][order(-V1)]
 # ANIMATION
 #load(file="politics2015-07-07gamma2dzetamax2.RData")
 #oopt <- animation::ani.options(interval = 0.1,
