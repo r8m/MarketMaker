@@ -16,9 +16,10 @@ options(digits.secs=3)
 
 #fname<-"data/"
 #setwd(fname)
-setwd("~/repos/MarketMaker/data")
-fname<-c("Si-12.152015-09-18.RData")
-symb<-"Si-12.15_FT"
+setwd("~/repos/MarketMaker/data/RIDATA/")
+#fname<-c("Ri-12.152015-09-16.RData")
+symb<-"RTS-3.16_FT"
+fnames<-dir()
 
 #"tickorderbookSI07072015.RData",
 #"tickorderbookSI30062015.RData",
@@ -32,35 +33,110 @@ symb<-"Si-12.15_FT"
 #          "tickorderbookSI1704.RData",
 #          "tickorderbookSI1604.RData")
 
-# obMarketParams<-list()
-# for(i in 1:length(fname)){    
-#     obMarketParams[[i]]<-getMarketParams(fname[i])
-# }
+obMarketParams<-list()
+for(i in 1:length(fnames)){    
+     obMarketParams[[i]]<-getMarketParams(fnames[i],
+                                          TFrame=2, 
+                                          deltat=0.1,
+                                          MY=10,
+                                          deltaY=1, 
+                                          MF=10, 
+                                          # Disbalance step
+                                          deltaF=0.1, 
+                                          # Price min step
+                                          deltaTick=10,
+                                          #Commision
+                                          eps=1,
+                                          # Invenory penalization (Risk)
+                                          gamma=10,
+                                          # Max market order size in lot
+                                          dzetamax=10,
+                                          #Spread Max
+                                          SMax=9, 
+                                          # Orderbook max level
+                                          levelF=1, 
+                                          shiftvalue = 1)
+ }
 # 
+#Market Params stat
+head<-c("dfdate",
+        "lambdaS",
+        "alfaF",
+        "sigmaF",
+        "lambdaJ1",
+        "lambdaJ2",
+        "beta1",
+        "beta2",
+        "lambdaMA",
+        "lambdaMB",
+        "dzeta0",   
+        "dzeta1",
+        "SMax")
+dtMP<-rbindlist(lapply(obMarketParams, FUN=function(x){
+  data.table(x$dfdate,
+             x$lambdaS,
+             x$alfaF,
+             x$sigmaF,
+             x$lambdaJ1,
+             x$lambdaJ2,
+             x$beta1,
+             x$beta2,
+             x$lambdaMA,
+             x$lambdaMB,
+             x$dzeta0,   
+             x$dzeta1,
+             x$SMax)
+}))
+setnames(dtMP, head)
+dtMP
+
+roS<-lapply(obMarketParams,FUN=function(x)x$roS@transitionMatrix)
+roS<-apply(simplify2array(roS),1:2,mean)
+
+obMPdf<-obMarketParams[[1]]
+obMPdf$lambdaS<-dtMP[,mean(lambdaS)]
+obMPdf$alfaF<-dtMP[,mean(alfaF)]
+obMPdf$sigmaF<-dtMP[,mean(sigmaF)]
+obMPdf$lambdaJ1<-dtMP[,mean(lambdaJ1)]
+obMPdf$lambdaJ2<-dtMP[,mean(lambdaJ2)]
+obMPdf$beta1<-dtMP[,mean(beta1)]
+obMPdf$beta2<-dtMP[,mean(beta2)]
+obMPdf$lambdaMA<-dtMP[,mean(lambdaMA)]
+obMPdf$lambdaMB<-dtMP[,mean(lambdaMB)]
+obMPdf$dzeta0<-dtMP[,mean(dzeta0)]   
+obMPdf$dzeta1<-dtMP[,mean(dzeta1)]
+obMPdf$roS<-roS
+
+
 # #' Solve trade politics
 # obMPdf<-obMarketParams[[1]]
-startTime<-Sys.time()
-obMPdf<-getMarketParams(fname,
-                        TFrame=1, 
-                        deltat=0.1,
-                        MY=10,
-                        deltaY=1, 
-                        MF=10, 
-                        # Disbalance step
-                        deltaF=0.1, 
-                        # Price min step
-                        deltaTick=1,
-                        #Commision
-                        eps=0.5,
-                        # Invenory penalization (Risk)
-                        gamma=1,
-                        # Max market order size in lot
-                        dzetamax=10,
-                        #Spread Max
-                        SMax=10, 
-                        # Orderbook max level
-                        levelF=2, 
-                        shiftvalue = 1)
+
+
+# obMPdf<-getMarketParams(fname,
+#                         TFrame=1, 
+#                         deltat=0.1,
+#                         MY=5,
+#                         deltaY=1, 
+#                         MF=10, 
+#                         # Disbalance step
+#                         deltaF=0.1, 
+#                         # Price min step
+#                         deltaTick=10,
+#                         #Commision
+#                         eps=0.5,
+#                         # Invenory penalization (Risk)
+#                         gamma=1,
+#                         # Max market order size in lot
+#                         dzetamax=5,
+#                         #Spread Max
+#                         SMax=10, 
+#                         # Orderbook max level
+#                         levelF=2, 
+#                         shiftvalue = 1)
+
+
+
+
 Sys.time()-startTime
 
 
@@ -159,6 +235,8 @@ write.csv(data.frame( obMPdf$dfdate,
                       obMPdf$SMax,     
                       obMPdf$NS),
           file=paste("marketparams",obMPdf$symbol,obMPdf$dfdate,
+                     "gamma",obMPdf$gamma,
+                     "dzetamax", obMPdf$dzetamax,
                      ".csv", sep="_"))
 
 manipulate(PlotStrategies(t,s), 
@@ -177,37 +255,5 @@ politics[,.N/politics[,.N],by=Str][order(-V1)]
 
 # 
 # 
-# #Market Params stat
-# head<-c("dfdate",
-#         "lambdaS",
-#         "alfaF",
-#         "sigmaF",
-#         "lambdaJ1",
-#         "lambdaJ2",
-#         "beta1",
-#         "beta2",
-#         "lambdaMA",
-#         "lambdaMB",
-#         "dzeta0",   
-#         "dzeta1")
-# files<-c("~/repos/MarketMaker/data/politics_Si-12.15_FT_2015-09-16_gamma_1_dzetamax_10_.RData",
-#          "~/repos/MarketMaker/data/politics_Si-12.15_FT_2015-09-17_gamma_1_dzetamax_10_.RData",
-#          "~/repos/MarketMaker/data/politics_Si-12.15_FT_2015-09-18_gamma_1_dzetamax_10_.RData")
-# 
-# dtMP<-rbindlist(lapply(files, FUN=function(x){
-#   load(x)
-#   data.table(obMPdf$dfdate,
-#              obMPdf$lambdaS,
-#              obMPdf$alfaF,
-#              obMPdf$sigmaF,
-#              obMPdf$lambdaJ1,
-#              obMPdf$lambdaJ2,
-#              obMPdf$beta1,
-#              obMPdf$beta2,
-#              obMPdf$lambdaMA,
-#              obMPdf$lambdaMB,
-#              obMPdf$dzeta0,   
-#              obMPdf$dzeta1)
-# }))
-# setnames(dtMP, head)
-# dtMP
+
+

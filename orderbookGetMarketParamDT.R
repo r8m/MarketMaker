@@ -46,8 +46,8 @@ getMarketParams<-function(fname,
     
     # Clean and Filter Data
     dfdate<-format(df$datetime[1], "%Y-%m-%d")
-    downlimit<-as.POSIXct(paste(dfdate,"10:05:00.000"))
-    uplimit<-as.POSIXct(paste(dfdate,"18:00:00.000"))
+    downlimit<-as.POSIXct(paste(dfdate,"10:00:00.000"))
+    uplimit<-as.POSIXct(paste(dfdate,"18:45:00.000"))
     
     
     df[,bidCum:=rowSums(.SD),.SDcols=paste("bidvolume",0:levelF,sep="")]

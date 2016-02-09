@@ -42,8 +42,8 @@ getMarketParams<-function(fname,
     
     # Clean and Filter Data
     dfdate<-format(df$datetime[2], "%Y-%m-%d")
-    downlimit<-as.POSIXct(paste(dfdate,"10:05:00.000"))
-    uplimit<-as.POSIXct(paste(dfdate,"18:00:00.000"))
+    downlimit<-as.POSIXct(paste(dfdate,"10:00:00.000"))
+    uplimit<-as.POSIXct(paste(dfdate,"18:45:00.000"))
     
     df$bidCum<-apply(cbind(0,df[,paste("bidvolume",0:levelF,sep="")]),1,FUN=sum)
     df$askCum<-apply(cbind(0,df[,paste("askvolume",0:levelF,sep="")]),1,FUN=sum)
@@ -62,7 +62,7 @@ getMarketParams<-function(fname,
             
         )%>%
         filter(deltaS>0)%>%
-        filter(deltaS<=SMax)%>%
+        filter(deltaS<= SMax + deltaTick)%>%
         filter(abs(logF)<=MF)%>%
         #filter(abs(logF)>0)%>%
         filter(datetime>downlimit & datetime<uplimit)

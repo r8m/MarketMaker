@@ -82,14 +82,19 @@ ggplot(data=df[datetime>=as.POSIXct("2015-12-21 10:15:05") & datetime<=as.POSIXc
 ###################### PLAZA DATA FROM _LANDY #####################################
 library(data.table)
 options(digits.secs=3)
-setwd("f:/TRADE/Data/research/zxweed/")
-fname<-"SBRF-12.15_18.09.2015.csv"
+setwd("~/repos/Data/research/RI/")
+fileList<-dir()
 
-tbaDT<-fread(fname,sep=";",stringsAsFactors=FALSE)
-colnames(tbaDT)<-tolower(colnames(tbaDT))
-dtFormat<-"%d.%m.%Y %H:%M:%OS"
-tbaDT[,"datetime":=as.POSIXct(strptime(datetime,dtFormat))]
-setnames(tbaDT,"sign", "buysell")
 
-df<-tbaDT
-save(df, file=paste("SBRF-12.15", as.Date(tbaDT$datetime[1]),".RData", sep=""))
+makeData<-function(fname) {
+  #<-"SBRF-3.16_04.01.2016.csv"
+  tbaDT<-fread(fname,sep=";",stringsAsFactors=FALSE)
+  colnames(tbaDT)<-tolower(colnames(tbaDT))
+  dtFormat<-"%d.%m.%Y %H:%M:%OS"
+  tbaDT[,"datetime":=as.POSIXct(strptime(datetime,dtFormat))]
+  setnames(tbaDT,"sign", "buysell")
+  df<-tbaDT
+  save(df, file=paste("RTS-3.16", as.Date(tbaDT$datetime[1]),".RData", sep=""))
+}
+
+lapply(fileList, FUN=makeData)
