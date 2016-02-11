@@ -8,7 +8,7 @@ library(manipulate)
 setwd("~/repos/MarketMaker")
 
 source('orderbookOU.R', echo=FALSE)
-source('orderbookGetMarketParamDT.R', echo=FALSE)
+source('orderbookGetMarketParamSepTickBidAksDT.R', echo=FALSE)
 source('orderbookBackWardInductionMy.R', echo=TRUE)
 source('orderbookPlotStrategies.R', echo=FALSE)
 
@@ -16,9 +16,10 @@ options(digits.secs=3)
 
 #fname<-"data/"
 #setwd(fname)
-setwd("~/repos/MarketMaker/data/RIDATA/")
+
+setwd("~/repos/MarketMaker/data/SBRFDATA/")
 #fname<-c("Ri-12.152015-09-16.RData")
-symb<-"RTS-3.16_FT"
+symb<-"SBRF-3.16_FT"
 fnames<-dir()
 
 #"tickorderbookSI07072015.RData",
@@ -36,25 +37,25 @@ fnames<-dir()
 obMarketParams<-list()
 for(i in 1:length(fnames)){    
      obMarketParams[[i]]<-getMarketParams(fnames[i],
-                                          TFrame=2, 
-                                          deltat=0.1,
+                                          TFrame=10, 
+                                          deltat=1,
                                           MY=10,
                                           deltaY=1, 
                                           MF=10, 
                                           # Disbalance step
                                           deltaF=0.1, 
                                           # Price min step
-                                          deltaTick=10,
+                                          deltaTick=1,
                                           #Commision
-                                          eps=1,
+                                          eps=0.25,
                                           # Invenory penalization (Risk)
-                                          gamma=10,
+                                          gamma=0.1,
                                           # Max market order size in lot
                                           dzetamax=10,
                                           #Spread Max
                                           SMax=9, 
                                           # Orderbook max level
-                                          levelF=1, 
+                                          levelF=2, 
                                           shiftvalue = 1)
  }
 # 
@@ -90,21 +91,25 @@ dtMP<-rbindlist(lapply(obMarketParams, FUN=function(x){
 setnames(dtMP, head)
 dtMP
 
-roS<-lapply(obMarketParams,FUN=function(x)x$roS@transitionMatrix)
-roS<-apply(simplify2array(roS),1:2,mean)
+obMPdf<-obMarketParams[[dtMP[,.SD,by=1:nrow(dtMP)][SMax==min(SMax),nrow][1]]]
+SMin<-dtMP[,min(SMax)][1]/obMPdf$deltaTick
 
-obMPdf<-obMarketParams[[1]]
-obMPdf$lambdaS<-dtMP[,mean(lambdaS)]
-obMPdf$alfaF<-dtMP[,mean(alfaF)]
-obMPdf$sigmaF<-dtMP[,mean(sigmaF)]
-obMPdf$lambdaJ1<-dtMP[,mean(lambdaJ1)]
-obMPdf$lambdaJ2<-dtMP[,mean(lambdaJ2)]
-obMPdf$beta1<-dtMP[,mean(beta1)]
-obMPdf$beta2<-dtMP[,mean(beta2)]
-obMPdf$lambdaMA<-dtMP[,mean(lambdaMA)]
-obMPdf$lambdaMB<-dtMP[,mean(lambdaMB)]
-obMPdf$dzeta0<-dtMP[,mean(dzeta0)]   
-obMPdf$dzeta1<-dtMP[,mean(dzeta1)]
+
+roS<-lapply(obMarketParams,FUN=function(x)x$roS@transitionMatrix][1:SMin,1:SMin])
+roS<-apply(simplify2array(roS),1:2,median)
+
+
+obMPdf$lambdaS<-dtMP[,median(lambdaS)]
+obMPdf$alfaF<-dtMP[,median(alfaF)]
+obMPdf$sigmaF<-dtMP[,median(sigmaF)]
+obMPdf$lambdaJ1<-dtMP[,median(lambdaJ1)]
+obMPdf$lambdaJ2<-dtMP[,median(lambdaJ2)]
+obMPdf$beta1<-dtMP[,median(beta1)]
+obMPdf$beta2<-dtMP[,median(beta2)]
+obMPdf$lambdaMA<-dtMP[,median(lambdaMA)]
+obMPdf$lambdaMB<-dtMP[,median(lambdaMB)]
+obMPdf$dzeta0<-dtMP[,median(dzeta0)]   
+obMPdf$dzeta1<-dtMP[,median(dzeta1)]
 obMPdf$roS<-roS
 
 

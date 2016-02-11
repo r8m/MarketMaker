@@ -79,7 +79,7 @@ ggplot(data=df[datetime>=as.POSIXct("2015-12-21 10:15:05") & datetime<=as.POSIXc
   geom_point(aes(datetime,bidprice0), colour="mediumaquamarine",alpha=I(0.5))
 
 ###################################################################################
-###################### PLAZA DATA FROM _LANDY #####################################
+###################### PLAZA DATA FROM zxweed (combined tick + bid/ask) #####################################
 library(data.table)
 options(digits.secs=3)
 setwd("~/repos/Data/research/RI/")
@@ -98,3 +98,39 @@ makeData<-function(fname) {
 }
 
 lapply(fileList, FUN=makeData)
+
+
+
+###################################################################################
+###################### PLAZA DATA FROM zxweed (separate tick and bid/ask) #####################################
+library(data.table)
+options(digits.secs=3)
+setwd("~/repos/Data/research/SBRF/")
+symb<-"SBRF-3.16"
+fileList<-dir()
+
+fileList<-fileList[grepl("snap",fileList)]
+fileList<-gsub(".snap","",fileList)
+makeData<-function(fname,symb){
+  obDT<-fread(paste(fname,".snap",sep=""), sep=";", stringsAsFactors = FALSE)
+  setnames(obDT,c("datetime","bidprice0","askprice0","bidvolume0","bidvolume1","bidvolume2","askvolume0","askvolume1","askvolume2"))
+  dtFormat<-"%d.%m.%y %H:%M:%OS"
+  obDT[,datetime:=as.POSIXct(strptime(datetime,dtFormat))]
+  
+  
+  tickDT<-fread(paste(fname,".tick",sep=""), sep="auto", stringsAsFactors = FALSE, header=FALSE)
+  tickDT<-tickDT[,.(V2,V4,V5)]
+  setnames(tickDT,c("datetime", "price", "volume"))
+  tickDT[,price:=gsub("Price=","",price)]
+  tickDT[,price:=as.numeric(gsub(" ","",price))]
+  tickDT[,volume:=gsub("Volume=","",volume)]
+  tickDT[,volume:=as.numeric(gsub(" ","",volume))]
+  tickDT[,buysell:=ifelse(volume>0,"buy", "sell")]
+  tickDT[,volume:=abs(volume)]
+  dtFormat<-"%d.%m.%Y %H:%M:%OS"
+  tickDT[,datetime:=as.POSIXct(strptime(datetime,dtFormat))]
+
+  save(tickDT,obDT, file=paste(symb, as.Date(tickDT$datetime[1]),".RData", sep=""))
+}
+
+lapply(fileList, FUN=function(x) makeData(x,symb))

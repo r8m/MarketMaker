@@ -12,7 +12,10 @@ PlotStrategies<-function(tt, ss){
                             ", Gamma=",obMPdf$gamma,
                             ", DzetaMax=",obMPdf$dzetamax, 
                             sep=""), 
-                      sep="\n"))#+
+                      sep="\n"))+
+      scale_x_continuous(breaks = obMPdf$YY)
+      #scale_y_continuous(breaks = obMPdf$FF)
+      
     StrMap <- StrMap + theme_bw()
     
     print(StrMap)

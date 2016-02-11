@@ -50,8 +50,8 @@ getMarketParams<-function(fname,
     uplimit<-as.POSIXct(paste(dfdate,"18:45:00.000"))
     
     
-    df[,bidCum:=rowSums(.SD),.SDcols=paste("bidvolume",0:levelF,sep="")]
-    df[,askCum:=rowSums(.SD),.SDcols=paste("askvolume",0:levelF,sep="")]
+    df[,bidCum:=rowSums(.SD*exp(-0.5*(0:levelF))),.SDcols=paste("bidvolume",0:levelF,sep="")]
+    df[,askCum:=rowSums(.SD*exp(-0.5*(0:levelF))),.SDcols=paste("askvolume",0:levelF,sep="")]
     
     #' Spread S
     df[,deltaS:=round(askprice0-bidprice0, abs(floor(log10(deltaTick))))]
