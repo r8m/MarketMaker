@@ -96,7 +96,7 @@ SolveBackwardInduction<-function()
                             plt.polmk[t, y,f,s]  <<- TRUE
                         }
                         #DEBUG
-                        print(paste("plt.polmk",plt.polmk[t, y,f,s], t, y, f, s))
+                        cat("'\r",paste("plt.polmk",plt.polmk[t, y,f,s], t, y, f, s))
                     }
                 }
             }

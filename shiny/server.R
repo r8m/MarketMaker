@@ -30,6 +30,14 @@ shinyServer(function(input, output) {
       s <- input$spread
       PlotStrategies("politics_SBRF-3.16_FT_2016-01-04_gamma_0.1_dzetamax_10_.RData",t,s)
     })
+    
+    output$politicsPlotSBRFN <- renderPlot({
+      t <- input$time
+      s <- input$spread
+      PlotStrategies("politics_SBRF-3.16_FT_2016-01-04_gamma_0.1_dzetamax_3_.RData",t,s)
+    })
+    
+    
     output$politicsPlotSi <- renderPlot({
       t <- input$time
       s <- input$spread

@@ -17,9 +17,9 @@ options(digits.secs=3)
 #fname<-"data/"
 #setwd(fname)
 
-setwd("~/repos/MarketMaker/data/SBRFDATA/")
+setwd("~/repos/MarketMaker/data/RIDATA/")
 #fname<-c("Ri-12.152015-09-16.RData")
-symb<-"SBRF-3.16_FT"
+symb<-"RTS-3.16_FT"
 fnames<-dir()
 
 #"tickorderbookSI07072015.RData",
@@ -37,7 +37,7 @@ fnames<-dir()
 obMarketParams<-list()
 for(i in 1:length(fnames)){    
      obMarketParams[[i]]<-getMarketParams(fnames[i],
-                                          TFrame=10, 
+                                          TFrame=20, 
                                           deltat=1,
                                           MY=10,
                                           deltaY=1, 
@@ -45,18 +45,22 @@ for(i in 1:length(fnames)){
                                           # Disbalance step
                                           deltaF=0.1, 
                                           # Price min step
-                                          deltaTick=1,
+                                          deltaTick=10,
                                           #Commision
-                                          eps=0.25,
+                                          eps=1,
                                           # Invenory penalization (Risk)
-                                          gamma=0.1,
+                                          gamma=0.5,
                                           # Max market order size in lot
-                                          dzetamax=10,
+                                          dzetamax=3,
                                           #Spread Max
                                           SMax=9, 
                                           # Orderbook max level
                                           levelF=2, 
-                                          shiftvalue = 1)
+                                          #Obseravation step
+                                          deltaN = 2,
+                                          #Observation control window
+                                          NFrame=20,
+                                          byT=FALSE)
  }
 # 
 #Market Params stat
@@ -72,7 +76,11 @@ head<-c("dfdate",
         "lambdaMB",
         "dzeta0",   
         "dzeta1",
-        "SMax")
+        "SMax",
+        "deltat",
+        "TFrame",
+        "deltaN",
+        "NFrame")
 dtMP<-rbindlist(lapply(obMarketParams, FUN=function(x){
   data.table(x$dfdate,
              x$lambdaS,
@@ -86,7 +94,11 @@ dtMP<-rbindlist(lapply(obMarketParams, FUN=function(x){
              x$lambdaMB,
              x$dzeta0,   
              x$dzeta1,
-             x$SMax)
+             x$SMax,
+             x$deltat,
+             x$TFrame,
+             x$deltaN,
+             x$NFrame)
 }))
 setnames(dtMP, head)
 dtMP
@@ -95,7 +107,7 @@ obMPdf<-obMarketParams[[dtMP[,.SD,by=1:nrow(dtMP)][SMax==min(SMax),nrow][1]]]
 SMin<-dtMP[,min(SMax)][1]/obMPdf$deltaTick
 
 
-roS<-lapply(obMarketParams,FUN=function(x)x$roS@transitionMatrix][1:SMin,1:SMin])
+roS<-lapply(obMarketParams,FUN=function(x)x$roS@transitionMatrix[1:SMin,1:SMin])
 roS<-apply(simplify2array(roS),1:2,median)
 
 
@@ -110,6 +122,14 @@ obMPdf$lambdaMA<-dtMP[,median(lambdaMA)]
 obMPdf$lambdaMB<-dtMP[,median(lambdaMB)]
 obMPdf$dzeta0<-dtMP[,median(dzeta0)]   
 obMPdf$dzeta1<-dtMP[,median(dzeta1)]
+obMPdf$deltat<-dtMP[,round(median(deltat),1)]
+obMPdf$deltaN<-dtMP[,median(deltaN)]
+obMPdf$TFrame<-dtMP[,round(median(TFrame),1)]
+obMPdf$NFrame<-dtMP[,median(NFrame)]
+obMPdf$TT<- seq(0,obMPdf$TFrame, by=round(obMPdf$deltat,1))
+obMPdf$NT<-length(obMPdf$TT)
+
+
 obMPdf$roS<-roS
 
 
@@ -238,15 +258,17 @@ write.csv(data.frame( obMPdf$dfdate,
                       obMPdf$gamma,
                       obMPdf$dzetamax,
                       obMPdf$SMax,     
-                      obMPdf$NS),
+                      obMPdf$NS,
+                      obMPdf$deltaN,
+                      obMPdf$NFrame),
           file=paste("marketparams",obMPdf$symbol,obMPdf$dfdate,
                      "gamma",obMPdf$gamma,
                      "dzetamax", obMPdf$dzetamax,
                      ".csv", sep="_"))
 
 manipulate(PlotStrategies(t,s), 
-           t=slider(1,(obMPdf$NT-1)),
-           s=slider(1,obMPdf$NS))
+           t=slider(1,(obMPdf$NT-1), step=1),
+           s=slider(1,obMPdf$NS,step=1))
 
 politics[,.N/politics[,.N],by=Str][order(-V1)]
 # ANIMATION

@@ -26,9 +26,10 @@ shinyUI(fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("politicsPlotSBRF"),
-      plotOutput("politicsPlotRTS"),
-      plotOutput("politicsPlotSi")
+      tabsetPanel(
+       tabPanel("Combined BidAsk marketdata",plotOutput("politicsPlotSBRF")),
+       tabPanel("Separate BidAsk marketdata",plotOutput("politicsPlotSBRFN"))
+      )
     )
   )
 ))
