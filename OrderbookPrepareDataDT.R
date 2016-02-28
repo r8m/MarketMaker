@@ -134,3 +134,68 @@ makeData<-function(fname,symb){
 }
 
 lapply(fileList, FUN=function(x) makeData(x,symb))
+
+
+###################### PLAZA DATA FROM FULL ORDERLOG (MY CLASSES) #####################################
+library(data.table)
+options(digits.secs=3)
+setwd("~/repos/Data/research/SI/")
+symb<-"SI-3.16"
+fileList<-dir()
+makeBidAskData<-function(fname)
+{
+  print(paste(Sys.time(),"Start procesing bid/ask data from",fname))
+  obDT<-fread(fname, sep=",", stringsAsFactors = FALSE)
+  obDT[,`:=`(V2,NULL),]
+  obDT[,`:=`(V9,NULL),]
+  setnames(obDT,c("datetime","bidprice0","bidvolume0",
+                  "bidprice1","bidvolume1",
+                  "bidprice2","bidvolume2",
+                  "askprice0","askvolume0",
+                  "askprice1","askvolume1",
+                  "askprice2","askvolume2"))
+  dtFormat<-"%Y-%m-%d %H:%M:%OS"
+  obDT[,datetime:=as.POSIXct(strptime(datetime,dtFormat))]
+  # Filter 
+  #' if best bid and best ask were not changed.
+  #' if price=0
+  
+  obDT<-obDT[askprice0>0 &bidprice0>0 &  askprice1>0 & bidprice1>0 &  askprice2>0 & bidprice2>0]
+  obDT<-obDT[askprice0>bidprice0]
+  print(paste(Sys.time(),"Found",obDT[,.N]," bidasks within ",obDT[1,datetime],"-",obDT[.N,datetime]))
+  #obDT<-obDT[shift(askprice0)!=askprice0 | shift(bidprice0)!=bidprice0]
+}
+
+makeTickData<-function(fname)
+{
+  print(paste(Sys.time(),"Start procesing tick data from",fname))
+  tickDT<-fread(fname, sep=",", stringsAsFactors = FALSE)
+  dtFormat<-"%Y-%m-%d %H:%M:%OS"
+  if(ncol(tickDT)==4)
+    setnames(tickDT,c("datetime", "price", "volume","buysell"))
+  if(ncol(tickDT)==5)
+    setnames(tickDT,c("datetime", "price", "volume","buysell","dealid"))
+  
+  tickDT[,buysell:=ifelse(buysell==TRUE,"buy","sell")]
+  tickDT[,datetime:=as.POSIXct(strptime(datetime,dtFormat))]
+  print(paste(Sys.time(),"Found",tickDT[,.N]," ticks within ",tickDT[1,datetime],"-",tickDT[.N,datetime]))
+  
+}
+
+obDT<-rbindlist(lapply(grep("bid",fileList,value=T),FUN=makeBidAskData))
+
+obDT<-obDT[datetime>=as.POSIXct(paste(as.Date(obDT$datetime[1])+1,"10:00:00.000"))]
+setkey(obDT,datetime)
+
+tickDT<-rbindlist(lapply(grep("tick",fileList,value=T),FUN=makeTickData))
+tickDT<-tickDT[datetime>=as.POSIXct(paste(as.Date(tickDT$datetime[1])+1,"10:00:00.000"))]
+
+setkey(tickDT,datetime)
+
+
+
+save(tickDT,obDT, file=paste(symb, as.Date(tickDT$datetime[1]),".RData", sep=""))
+
+print(paste(Sys.time(),"Total found",obDT[,.N]," bidasks within ",obDT[1,datetime],"-",obDT[.N,datetime]))
+print(paste(Sys.time(),"Total found",tickDT[,.N]," ticks within ",tickDT[1,datetime],"-",tickDT[.N,datetime]))
+

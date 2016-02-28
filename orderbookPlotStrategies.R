@@ -1,4 +1,3 @@
-#library(grid)
 library(ggplot2)
 PlotStrategies<-function(tt, ss){
     StrMap <- ggplot(politics[t==tt & s==ss],
@@ -19,11 +18,4 @@ PlotStrategies<-function(tt, ss){
     StrMap <- StrMap + theme_bw()
     
     print(StrMap)
-#     pushViewport(viewport(layout = grid.layout(1, 2)))
-#     print(StrMap,
-#           vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
-#     print(qplot(x=Str, color=Str,data=politics, fill=Str),
-#           vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
-
-    
 }

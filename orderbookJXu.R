@@ -17,9 +17,9 @@ options(digits.secs=3)
 #fname<-"data/"
 #setwd(fname)
 
-setwd("~/repos/MarketMaker/data/RIDATA/")
+setwd("~/repos/MarketMaker/data/SBRFDATA/")
 #fname<-c("Ri-12.152015-09-16.RData")
-symb<-"RTS-3.16_FT"
+symb<-"SBRF-3.16_FT"
 fnames<-dir()
 
 #"tickorderbookSI07072015.RData",
@@ -39,25 +39,25 @@ for(i in 1:length(fnames)){
      obMarketParams[[i]]<-getMarketParams(fnames[i],
                                           TFrame=20, 
                                           deltat=1,
-                                          MY=10,
+                                          MY=20,
                                           deltaY=1, 
                                           MF=10, 
                                           # Disbalance step
-                                          deltaF=0.1, 
+                                          deltaF=0.05, 
                                           # Price min step
-                                          deltaTick=10,
+                                          deltaTick=1,
                                           #Commision
-                                          eps=1,
+                                          eps=0.25,
                                           # Invenory penalization (Risk)
-                                          gamma=0.5,
+                                          gamma=0.1,
                                           # Max market order size in lot
-                                          dzetamax=3,
+                                          dzetamax=1,
                                           #Spread Max
-                                          SMax=9, 
+                                          SMax=10, 
                                           # Orderbook max level
                                           levelF=2, 
                                           #Obseravation step
-                                          deltaN = 2,
+                                          deltaN = 1,
                                           #Observation control window
                                           NFrame=20,
                                           byT=FALSE)
@@ -122,11 +122,11 @@ obMPdf$lambdaMA<-dtMP[,median(lambdaMA)]
 obMPdf$lambdaMB<-dtMP[,median(lambdaMB)]
 obMPdf$dzeta0<-dtMP[,median(dzeta0)]   
 obMPdf$dzeta1<-dtMP[,median(dzeta1)]
-obMPdf$deltat<-dtMP[,round(median(deltat),1)]
+obMPdf$deltat<-dtMP[,round(median(deltat),2)]
 obMPdf$deltaN<-dtMP[,median(deltaN)]
-obMPdf$TFrame<-dtMP[,round(median(TFrame),1)]
+obMPdf$TFrame<-dtMP[,round(median(TFrame),2)]
 obMPdf$NFrame<-dtMP[,median(NFrame)]
-obMPdf$TT<- seq(0,obMPdf$TFrame, by=round(obMPdf$deltat,1))
+obMPdf$TT<- seq(0,obMPdf$TFrame, by=round(obMPdf$deltat,2))
 obMPdf$NT<-length(obMPdf$TT)
 
 
