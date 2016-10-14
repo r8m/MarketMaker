@@ -1,45 +1,36 @@
-#Orderbook Research Jiangmin Xu Algorithm
-
+#' Orderbook Research  with Jiangmin Xu Algorithm
+#' Main script
+#' 
 #Load libraries
 library(data.table)
 library(dplyr)
 library(ggplot2)
 library(manipulate)
-setwd("~/repos/MarketMaker")
-
+library(TTR)
+setwd("~/repo/MarketMaker")
+source('orderbookPrepareData.R',echo=FALSE)
 source('orderbookOU.R', echo=FALSE)
-source('orderbookGetMarketParamSepTickBidAksDT.R', echo=FALSE)
-source('orderbookBackWardInductionMy.R', echo=TRUE)
+source('orderbookGetMarketParam_VolumeDisbalanceSignal.R', echo=FALSE)
+#source('orderbookGetMarketParam_IntensitySignal.R', echo=F)
+source('orderbookBackWardInductionMy.R', echo=FALSE)
 source('orderbookPlotStrategies.R', echo=FALSE)
-
 options(digits.secs=3)
 
-#fname<-"data/"
-#setwd(fname)
+symb<-"SBRF-12.16"
+rawDataPath<-"~/repo/MarketMaker/Demo/RawData/"
+orderBookPrepareData(rawDataPath, symb)
 
-setwd("~/repos/MarketMaker/data/SBRFDATA/")
-#fname<-c("Ri-12.152015-09-16.RData")
-symb<-"SBRF-3.16_FT"
-fnames<-dir()
 
-#"tickorderbookSI07072015.RData",
-#"tickorderbookSI30062015.RData",
-#          "tickorderbookSI2804.RData",
-#          "tickorderbookSI2704.RData",
-#          "tickorderbookSI2404.RData",
-#          "tickorderbookSI2304.RData",
-#          "tickorderbookSI2204.RData",
-#          "tickorderbookSI2104.RData",
-#          "tickorderbookSI2004.RData",
-#          "tickorderbookSI1704.RData",
-#          "tickorderbookSI1604.RData")
+setwd(rawDataPath)
+fnames<-grep("MM", dir(),value = T)
 
 obMarketParams<-list()
 for(i in 1:length(fnames)){    
-     obMarketParams[[i]]<-getMarketParams(fnames[i],
+  print(fnames[i])   
+  obMarketParams[[i]]<-getMarketParams(fnames[i],
                                           TFrame=20, 
                                           deltat=1,
-                                          MY=20,
+                                          MY=10,
                                           deltaY=1, 
                                           MF=10, 
                                           # Disbalance step
@@ -53,16 +44,16 @@ for(i in 1:length(fnames)){
                                           # Max market order size in lot
                                           dzetamax=1,
                                           #Spread Max
-                                          SMax=10, 
+                                          SMax=7, 
                                           # Orderbook max level
-                                          levelF=2, 
+                                          levelF=3, 
                                           #Obseravation step
                                           deltaN = 1,
                                           #Observation control window
-                                          NFrame=20,
+                                          NFrame=5,
                                           byT=FALSE)
  }
-# 
+
 #Market Params stat
 head<-c("dfdate",
         "lambdaS",
@@ -213,7 +204,7 @@ politics<-mutate(politics,
                  PingingAskSide=(PLT==TRUE)&(MMAQTY==1)&(MMBQTY==0),
                  PingingBidAskSide=(PLT==TRUE)&(MMBQTY==1)&(MMAQTY==1))
 
-
+politics<-data.table(politics)
 politics[,Str:=politicsNames[which(unlist(.SD))], .SDcols=politicsNames, by=1:nrow(politics)]
 
 rm(polmkdf, thmkadf, thmkbdf, thtkqdf)

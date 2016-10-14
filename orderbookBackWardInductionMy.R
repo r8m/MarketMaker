@@ -1,5 +1,5 @@
+# Functions for solving HJB-QVI equation using backward induction method.
 
-# Funktciia resheniia uravneniia HJB-QVI metodom obratnoi` induktcii
 # plt - struktura, v kotoroi` opredeleny` osnovny`e peremenny`e i politiki
 # plt.T - chislo vremenny`kh tochek rascheta, plt.S - chislo znachenii` spreda (=3)
 # plt.F- chislo tochek rascheta disbalansa ob``ema, plt.Y - kolichestvo znachenii` otkry`toi` pozitcii
@@ -96,6 +96,7 @@ SolveBackwardInduction<-function()
                             plt.polmk[t, y,f,s]  <<- TRUE
                         }
                         #DEBUG
+                        cat("'\r","                                                                             ")
                         cat("'\r",paste("plt.polmk",plt.polmk[t, y,f,s], t, y, f, s))
                     }
                 }
