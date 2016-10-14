@@ -5,7 +5,13 @@ Implementation of Marketmaker trading strategy for Russian market.
 * Trading politics calculation
 * Plot strategy Map
 
+
 ![alt text](Demo/RawData/orderbook.gif "")
+
+# Install and use
+
+* Clone repo
+* Run `orderbookMain.R`
 
 References:
 
